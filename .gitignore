@@ -1,0 +1,8 @@
+
+.pio/
+.vscode/
+.DS_Store
+
+# Private credentials
+include/Config.h
+
