@@ -34,6 +34,7 @@ void setup() {
     beginSinricManager();
 }
 
+
 void loop() {
     handleSinric();
 
@@ -41,24 +42,31 @@ void loop() {
 
     unsigned long currentTime = millis();
 
-    // Fetch weather immediately after WiFi connects,
-    // then refresh every 10 minutes.
-    if (WiFi.status() == WL_CONNECTED &&
-        (lastWeatherUpdate == 0 ||
-         currentTime - lastWeatherUpdate >= WEATHER_INTERVAL)) {
+    if (WiFi.status() == WL_CONNECTED) {
 
-        lastWeatherUpdate = currentTime;
+        if (lastWeatherUpdate == 0 ||
+            currentTime - lastWeatherUpdate >= WEATHER_INTERVAL) {
 
-        WeatherData weather;
+            Serial.println("Starting weather refresh...");
 
-        if (!fetchWeather(weather)) {
-            Serial.println("Weather update failed");
+            lastWeatherUpdate = currentTime;
+
+            WeatherData weather;
+
+            if (fetchWeather(weather)) {
+                Serial.println("Weather refresh successful");
+
+                refreshOLED();
+            } else {
+                Serial.println("Weather refresh failed");
+            }
         }
-        refreshOLED();
-        updateOLED(getWeatherData());
+
+    } else {
+        Serial.println("Waiting for WiFi...");
     }
 
-    // Refresh the OLED display and handle the 3-second notification.
     updateOLED(getWeatherData());
 }
+
 

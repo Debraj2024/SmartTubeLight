@@ -23,8 +23,11 @@ bool fetchWeather(WeatherData &data) {
 
     BearSSL::WiFiClientSecure client;
     client.setInsecure();
-
+    client.setBufferSizes(512, 512);
+    
     HTTPClient http;
+    http.setReuse(false);
+    http.setTimeout(15000);
 
     String url = "https://api.openweathermap.org/data/2.5/weather?q=";
     url += WEATHER_CITY;
@@ -45,14 +48,20 @@ bool fetchWeather(WeatherData &data) {
 
     int httpCode = http.GET();
 
-    if (httpCode != HTTP_CODE_OK) {
+    if (httpCode != HTTP_CODE_OK)
+    {
         Serial.printf("Weather HTTP Error: %d\n", httpCode);
+        Serial.println("Reason: " + http.errorToString(httpCode));
+
         http.end();
+        client.stop();
+
         return false;
     }
 
     String response = http.getString();
     http.end();
+    client.stop();
 
     JsonDocument doc;
 
